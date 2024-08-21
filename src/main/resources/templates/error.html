@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+</head>
+<body>
+    <H1 style="color: red;">We are sorry for trouble</H1>
+    <div th:if="${msg != ''}"><span th:text="${msg}"style="color: orange;"></span> </div>
+</body>
+</html>
