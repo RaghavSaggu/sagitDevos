@@ -1,4 +1,4 @@
-package com.sagitDevos.sagitDevos.model;
+package com.sagitDevos.sagitDevos.model.enitities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

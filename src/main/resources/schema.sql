@@ -1,6 +1,6 @@
-create table employee
+create table EMPLOYEE
 (
-    empid      int primary key,
-    empname    varchar(50),
-    department varchar(20)
+    emp_id      int primary key,
+    department varchar(255),
+    emp_name    varchar(255)
 );

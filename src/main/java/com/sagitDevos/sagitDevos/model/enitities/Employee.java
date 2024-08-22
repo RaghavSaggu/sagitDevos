@@ -1,4 +1,4 @@
-package com.sagitDevos.sagitDevos.model;
+package com.sagitDevos.sagitDevos.model.enitities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
-@Entity
+@Entity(name = "EMPLOYEE")
 @ToString
 @NoArgsConstructor
 public class Employee {

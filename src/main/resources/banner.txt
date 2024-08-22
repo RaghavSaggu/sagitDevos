@@ -1,0 +1,7 @@
+${AnsiColor.BRIGHT_GREEN}   ______             _       ______
+${AnsiColor.BRIGHT_RED}  / _____)           (_)  _  (______)
+${AnsiColor.BRIGHT_GREEN} ( (____  _____  ____ _ _| |_ _     _ _____ _   _ ___   ___
+${AnsiColor.BRIGHT_RED}  \____ \(____ |/ _  | (_   _) |   | | ___ | | | / _ \ /___)
+${AnsiColor.BRIGHT_GREEN}  _____) ) ___ ( (_| | | | |_| |__/ /| ____|\ V / |_| |___ |
+${AnsiColor.BRIGHT_RED} (______/\_____|\___ |_|  \__)_____/ |_____) \_/ \___/(___/
+${AnsiColor.BRIGHT_GREEN}               (_____|

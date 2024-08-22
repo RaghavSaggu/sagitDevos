@@ -15,11 +15,11 @@
 </head>
 <body>
     <h1>Heading of the HOMEPAGE</h1>
-    <div th:if="${name} != null OR ${name} != ''">Name: <span th:text="${name}"></span></div>
-    <div th:if="${obj} != null OR ${obj} != ''">
+    <div th:if="${name} != null AND ${name} != 'null' AND ${name} != ''">Inital Name was: <span th:text="${name}"></span></div>
+    <div th:if="${obj} != null AND ${obj} != ''">
         ID: <span th:text="${obj.id}"></span><br>
         Name: <span th:text="${obj.name}"></span><br>
-        Tech: <span th:text="${obj.tech}"></span>
+        Tech: <span th:text="${obj.department}"></span>
     </div>
 </body>
 </html>

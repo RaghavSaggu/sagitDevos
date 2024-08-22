@@ -1,7 +1,5 @@
 package com.sagitDevos.sagitDevos;
 
-import com.sagitDevos.sagitDevos.model.Employee;
-import com.sagitDevos.sagitDevos.repository.EmployeeRepo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

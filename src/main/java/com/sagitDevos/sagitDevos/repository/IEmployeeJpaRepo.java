@@ -1,20 +1,25 @@
 package com.sagitDevos.sagitDevos.repository;
 
 import com.sagitDevos.sagitDevos.model.enitities.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface IEmployeeRepo extends CrudRepository<Employee, Integer> {
+@EnableJpaRepositories
+public interface IEmployeeJpaRepo extends JpaRepository<Employee, Integer> {
     List<Employee> findAllByDepartment(String department);
 
     List<Employee> findAllByDepartmentContaining(String department);
 
     List<Employee> findAllByEmpIdGreaterThanEqual(Integer id);
 
-    @Query("FROM EMPLOYEE WHERE department=?1 ORDER BY empId")
-    List<Employee> findAllByDepartmentSorted(String department);
+    @Query("FROM EMPLOYEE ORDER BY empName")
+    List<Employee> findAllSortedByName();
+
+    List<Employee> findAllByDepartmentIsOrderByEmpName(String dept);
+
 }
