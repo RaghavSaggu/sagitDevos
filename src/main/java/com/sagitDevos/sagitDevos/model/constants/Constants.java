@@ -8,6 +8,7 @@ public interface Constants {
 
     String STRING_Y = "Y";
     String STRING_N = "N";
+    String COMMA = ",";
 
     String EMPTY_SPACE = " ";
     String EMPTY_STRING = "";

@@ -22,4 +22,8 @@ public interface IEmployeeJpaRepo extends JpaRepository<Employee, Integer> {
 
     List<Employee> findAllByDepartmentIsOrderByEmpName(String dept);
 
+    List<Employee> findAllByEmpIdIn(List<Integer> empIds);
+
+    List<Employee> findAllByEmpIdInOrderByEmpName(List<Integer> empIds);
+
 }

@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service("userService")
 public class EmployeeService implements Constants {
@@ -38,11 +40,41 @@ public class EmployeeService implements Constants {
         return statusDTO;
     }
 
-    public EmployeeDTO getAllEntities(String orderByName) {
-        return this.getAllEntities(null, orderByName);
+    public EmployeeDTO getAllEntitiesByDepartment(String orderByName) {
+        return this.getAllEntitiesByDepartment(null, orderByName);
     }
 
-    public EmployeeDTO getAllEntities(String department, String orderByName) {
+    public EmployeeDTO getAllEntitiesByIds(String idList, String orderByName) {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        try {
+            List<Employee> employeeList = new ArrayList<>();
+            if (StringUtils.isNotEmpty(idList)){
+                List<Integer> ids = Arrays.asList(StringUtils.split(idList, COMMA)).stream().map(id -> Integer.valueOf(id)).collect(Collectors.toList());
+                employeeList = StringUtils.equals(orderByName, "Y") ?
+                        employeeRepo.findAllByEmpIdInOrderByEmpName(ids) :
+                        employeeRepo.findAllByEmpIdIn(ids);
+            }
+            if(CollectionUtils.isEmpty(employeeList)) {
+                employeeDTO.setErrorCodeAndMessage(FAIL, NO_RECORD);
+            } else {
+                List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
+                for (Employee employee : employeeList) {
+                    EmployeeDataObject employeeDataObject = new EmployeeDataObject();
+                    employeeDataObject.setId(employee.getEmpId());
+                    employeeDataObject.setName(employee.getEmpName());
+                    employeeDataObject.setDepartment(employee.getDepartment());
+                    employeeDataObjects.add(employeeDataObject);
+                }
+                employeeDTO.setData(employeeDataObjects);
+                employeeDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return employeeDTO;
+    }
+
+    public EmployeeDTO getAllEntitiesByDepartment(String department, String orderByName) {
         EmployeeDTO employeeDTO = new EmployeeDTO();
         try {
             List<Employee> employeeList;

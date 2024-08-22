@@ -65,14 +65,14 @@ public class UserController implements Constants {
     @GetMapping(path = "users/get", produces = {"application/xml", "application/json"})
     public EmployeeDTO getAllUsers(@RequestParam(value = "orderByName", required = false) String orderByName) {
         log.debug("All user fetch request");
-        return employeeService.getAllEntities(orderByName);
+        return employeeService.getAllEntitiesByDepartment(orderByName);
     }
 
     @GetMapping("users/by/department")
     public EmployeeDTO getAllUsersByDepartment(@RequestParam("department") String department,
                                                @RequestParam(value = "orderByName", required = false) String orderByName) {
         log.debug("Department user fetch request");
-        return employeeService.getAllEntities(department, orderByName);
+        return employeeService.getAllEntitiesByDepartment(department, orderByName);
     }
 
     @GetMapping("user/id/{id}")
@@ -80,9 +80,15 @@ public class UserController implements Constants {
         return employeeService.getEntityById(id);
     }
 
-    @GetMapping("user/by/Id")
+    @GetMapping("user/by/id")
     public EmployeeDataObject getUserById(@RequestParam("id") Integer id) {
         return employeeService.getEntityById(id);
+    }
+
+    @GetMapping("users/by/ids")
+    public EmployeeDTO getUserListByIds(@RequestParam("ids") String idList,
+                                        @RequestParam(value = "orderByName", required = false) String orderByName) {
+        return employeeService.getAllEntitiesByIds(idList, orderByName);
     }
 
     @DeleteMapping("user/id/{id}")
