@@ -5,6 +5,7 @@ import com.sagitDevos.sagitDevos.model.dtos.EmployeeDTO;
 import com.sagitDevos.sagitDevos.model.dtos.StatusDTO;
 import com.sagitDevos.sagitDevos.model.enitities.Employee;
 import com.sagitDevos.sagitDevos.model.dataObjects.EmployeeDataObject;
+import com.sagitDevos.sagitDevos.model.exceptions.UserDefinedSagitException;
 import com.sagitDevos.sagitDevos.repository.IEmployeeJpaRepo;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang3.StringUtils;
@@ -44,36 +45,6 @@ public class EmployeeService implements Constants {
         return this.getAllEntitiesByDepartment(null, orderByName);
     }
 
-    public EmployeeDTO getAllEntitiesByIds(String idList, String orderByName) {
-        EmployeeDTO employeeDTO = new EmployeeDTO();
-        try {
-            List<Employee> employeeList = new ArrayList<>();
-            if (StringUtils.isNotEmpty(idList)){
-                List<Integer> ids = Arrays.asList(StringUtils.split(idList, COMMA)).stream().map(id -> Integer.valueOf(id)).collect(Collectors.toList());
-                employeeList = StringUtils.equals(orderByName, "Y") ?
-                        employeeRepo.findAllByEmpIdInOrderByEmpName(ids) :
-                        employeeRepo.findAllByEmpIdIn(ids);
-            }
-            if(CollectionUtils.isEmpty(employeeList)) {
-                employeeDTO.setErrorCodeAndMessage(FAIL, NO_RECORD);
-            } else {
-                List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
-                for (Employee employee : employeeList) {
-                    EmployeeDataObject employeeDataObject = new EmployeeDataObject();
-                    employeeDataObject.setId(employee.getEmpId());
-                    employeeDataObject.setName(employee.getEmpName());
-                    employeeDataObject.setDepartment(employee.getDepartment());
-                    employeeDataObjects.add(employeeDataObject);
-                }
-                employeeDTO.setData(employeeDataObjects);
-                employeeDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return employeeDTO;
-    }
-
     public EmployeeDTO getAllEntitiesByDepartment(String department, String orderByName) {
         EmployeeDTO employeeDTO = new EmployeeDTO();
         try {
@@ -88,7 +59,7 @@ public class EmployeeService implements Constants {
                         employeeRepo.findAllByDepartment(department);
             }
             if(CollectionUtils.isEmpty(employeeList)) {
-                employeeDTO.setErrorCodeAndMessage(FAIL, NO_RECORD);
+                employeeDTO.setErrorCodeAndMessage(SUCCESS, NO_RECORD);
             } else {
                 List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
                 for (Employee employee : employeeList) {
@@ -101,6 +72,40 @@ public class EmployeeService implements Constants {
                 employeeDTO.setData(employeeDataObjects);
                 employeeDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
             }
+        } catch (UserDefinedSagitException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return employeeDTO;
+    }
+
+    public EmployeeDTO getAllEntitiesByIds(String idList, String orderByName) {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        try {
+            List<Employee> employeeList = new ArrayList<>();
+            if (StringUtils.isNotEmpty(idList)){
+                List<Integer> ids = Arrays.asList(StringUtils.split(idList, COMMA)).stream().map(id -> Integer.valueOf(id)).collect(Collectors.toList());
+                employeeList = StringUtils.equals(orderByName, "Y") ?
+                        employeeRepo.findAllByEmpIdInOrderByEmpName(ids) :
+                        employeeRepo.findAllByEmpIdIn(ids);
+            }
+            if(CollectionUtils.isEmpty(employeeList)) {
+                throw new UserDefinedSagitException(NO_RECORD);
+            } else {
+                List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
+                for (Employee employee : employeeList) {
+                    EmployeeDataObject employeeDataObject = new EmployeeDataObject();
+                    employeeDataObject.setId(employee.getEmpId());
+                    employeeDataObject.setName(employee.getEmpName());
+                    employeeDataObject.setDepartment(employee.getDepartment());
+                    employeeDataObjects.add(employeeDataObject);
+                }
+                employeeDTO.setData(employeeDataObjects);
+                employeeDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
+            }
+        } catch (UserDefinedSagitException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,8 +123,10 @@ public class EmployeeService implements Constants {
 
                 employeeDataObject.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
             } else {
-                employeeDataObject.setErrorCodeAndMessage(FAIL, NO_RECORD);
+                throw new UserDefinedSagitException(NO_RECORD);
             }
+        } catch (UserDefinedSagitException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             employeeDataObject.setErrorCodeAndMessage(FAIL, COMMON_FAIL_MESSAGE);
@@ -135,8 +142,10 @@ public class EmployeeService implements Constants {
                 employeeRepo.delete(employee);
                 statusDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
             } else {
-                statusDTO.setErrorCodeAndMessage(FAIL, NO_RECORD);
+                throw new UserDefinedSagitException(NO_RECORD);
             }
+        } catch (UserDefinedSagitException e) {
+          throw e;
         } catch (Exception e) {
             e.printStackTrace();
             statusDTO.setErrorCodeAndMessage(FAIL, COMMON_FAIL_MESSAGE);

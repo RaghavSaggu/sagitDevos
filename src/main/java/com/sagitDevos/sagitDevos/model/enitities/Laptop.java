@@ -1,13 +1,17 @@
 package com.sagitDevos.sagitDevos.model.enitities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.ToString;
 
 @Data
+@Entity(name = "LAPTOP")
+@ToString
 @NoArgsConstructor
-@Component("alias")
 public class Laptop {
+    @Id
     private Integer lid;
     private String brandName;
 

@@ -1,7 +1,7 @@
 package com.sagitDevos.sagitDevos.controller;
 
 import com.sagitDevos.sagitDevos.model.dataObjects.EmployeeDataObject;
-import com.sagitDevos.sagitDevos.model.exceptions.SagitException;
+import com.sagitDevos.sagitDevos.model.exceptions.UserDefinedSagitException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -50,11 +50,11 @@ public class HomeController {
         try {
             log.debug("Home3 clicked");
             if (dataObject == null || (StringUtils.isEmpty(dataObject.getName()) && StringUtils.isEmpty(dataObject.getDepartment()))) {
-                throw new SagitException("Object not found");
+                throw new UserDefinedSagitException("Object not found");
             }
             mv.addObject("obj", dataObject);
             mv.setViewName("home");
-        } catch (SagitException e) {
+        } catch (UserDefinedSagitException e) {
             mv.addObject("msg", e.getMessage());
             mv.setViewName("Error");
         } catch (Exception e) {

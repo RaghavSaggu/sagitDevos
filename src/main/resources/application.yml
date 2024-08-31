@@ -1,0 +1,18 @@
+#server:
+#  port: 8088
+#
+#spring:
+#  profiles:
+#    active: devTest
+#management:
+#  endpoint:
+#    web:
+#      exposure:
+#        includes: *
+#    web:
+#      expo
+#        base-path: /manage
+#
+#name: base-YAML
+#environment:dev
+#enabled: true
