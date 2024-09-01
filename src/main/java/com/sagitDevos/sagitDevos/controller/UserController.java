@@ -18,15 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import com.opencsv.CSVReader;
 
 @Slf4j
 @RestController
@@ -107,6 +106,43 @@ public class UserController implements Constants {
         return statusDTO;
     }
 
+    @PostMapping("s/createUsingCsvOpenCsv")
+    public StatusDTO createUsersUsingOpenCsv(MultipartHttpServletRequest request) {
+        log.debug("user creation in bulk request using csv");
+        StatusDTO statusDTO = new StatusDTO();
+        try {
+            MultipartFile file = request.getFile("file");
+            List<String[]> data = new ArrayList<>();
+            List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
+            try (CSVReader reader = new CSVReader(new BufferedReader(new InputStreamReader(file.getInputStream())))) {
+                data = reader.readAll();
+            }
+            for (int i = 0; i<data.size(); i++) {
+                if(i == 0) {
+                    List<Object> fileHeader = Arrays.asList(data.get(i)[0], data.get(i)[1]);
+                    List<Object> expectedHeader = Arrays.asList("name", "department");
+                    this.validateHeaders(fileHeader, expectedHeader);
+                } else {
+                    EmployeeDataObject employeeDataObject = new EmployeeDataObject();
+                    employeeDataObject.setName(data.get(i)[0]);
+                    employeeDataObject.setDepartment(data.get(i)[1]);
+                    employeeDataObjects.add(employeeDataObject);
+                }
+            }
+            if (CollectionUtils.isEmpty(employeeDataObjects))
+                throw new UserDefinedSagitException("No user found to create");
+            for (EmployeeDataObject employeeDataObject : employeeDataObjects) {
+                employeeService.createEntity(employeeDataObject);
+            }
+            statusDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
+        }  catch (UserDefinedSagitException e) {
+            throw e;
+        } catch (Exception e) {
+            statusDTO.setErrorCodeAndMessage(FAIL, COMMON_FAIL_MESSAGE);
+        }
+        return statusDTO;
+    }
+
     @PostMapping("s/createUsingCsv")
     public StatusDTO createUsersUsingCsv(MultipartHttpServletRequest request) {
         log.debug("user creation in bulk request using csv");
@@ -165,6 +201,14 @@ public class UserController implements Constants {
     private void validateFile(String line, List<Object> fixedHeadersList) {
         try {
             List<Object> headersList = StringUtils.isNotEmpty(line) ? Arrays.asList(line.split(",")) : null;
+            this.validateHeaders(headersList, fixedHeadersList);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private void validateHeaders(List<Object> headersList, List<Object> fixedHeadersList) {
+        try {
             if (!CollectionUtils.isEmpty(headersList) && !CollectionUtils.isEmpty(fixedHeadersList) && headersList.size() != fixedHeadersList.size()) {
                 throw new InvalidParameterSagitException("File not allowed: Expected - " + fixedHeadersList.size() + " In File - " + headersList.size());
             } else {
