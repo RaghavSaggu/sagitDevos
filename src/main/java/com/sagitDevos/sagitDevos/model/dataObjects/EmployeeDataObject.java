@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serial;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -19,4 +20,10 @@ public class EmployeeDataObject extends StatusDTO {
     Integer id;
     String name;
     String department;
+
+    public EmployeeDataObject(List<Object> list) {
+        this.name = (String) list.get(0);
+        this.department = (String) list.get(1);
+//        this.id = Integer.valueOf((String) list.get(2));
+    }
 }

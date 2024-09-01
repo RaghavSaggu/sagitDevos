@@ -6,6 +6,7 @@ import com.sagitDevos.sagitDevos.model.constants.Constants;
 import com.sagitDevos.sagitDevos.model.dataObjects.EmployeeDataObject;
 import com.sagitDevos.sagitDevos.model.dtos.EmployeeDTO;
 import com.sagitDevos.sagitDevos.model.dtos.StatusDTO;
+import com.sagitDevos.sagitDevos.model.exceptions.InvalidParameterSagitException;
 import com.sagitDevos.sagitDevos.model.exceptions.UserDefinedSagitException;
 import com.sagitDevos.sagitDevos.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @RestController
@@ -94,6 +105,102 @@ public class UserController implements Constants {
             statusDTO.setErrorCodeAndMessage(FAIL, COMMON_FAIL_MESSAGE);
         }
         return statusDTO;
+    }
+
+    @PostMapping("s/createUsingCsv")
+    public StatusDTO createUsersUsingCsv(MultipartHttpServletRequest request) {
+        log.debug("user creation in bulk request using csv");
+        StatusDTO statusDTO = new StatusDTO();
+        try {
+            MultipartFile file = request.getFile("file");
+            List<Object> fixedHeader = Arrays.asList("name", "department");
+            List<EmployeeDataObject> employeeDataObjects = new ArrayList<>();
+            try (InputStream inputStream = file.getInputStream(); BufferedReader csvFile = new BufferedReader(new InputStreamReader(inputStream))) {
+                int i = 0;
+                Constructor constructor = this.getTheConstructor(EmployeeDataObject.class);
+                String line = "";
+                while ((line = csvFile.readLine()) != null) {
+                    if (i == 0) {
+                        this.validateFile(line, fixedHeader);
+                    } else {
+                        EmployeeDataObject object = (EmployeeDataObject) this.getTheObjectFromLine(EmployeeDataObject.class, line, constructor);
+                        employeeDataObjects.add(object);
+                    }
+                    i++;
+                }
+            }
+            if (CollectionUtils.isEmpty(employeeDataObjects))
+                throw new UserDefinedSagitException("No user found to create");
+            for (EmployeeDataObject employeeDataObject : employeeDataObjects) {
+                employeeService.createEntity(employeeDataObject);
+            }
+            statusDTO.setErrorCodeAndMessage(SUCCESS, COMMON_SUCCESS_MESSAGE);
+        } catch (UserDefinedSagitException e) {
+            throw e;
+        } catch (Exception e) {
+            statusDTO.setErrorCodeAndMessage(FAIL, COMMON_FAIL_MESSAGE);
+        }
+        return statusDTO;
+    }
+
+    private <T> Constructor getTheConstructor(Class<T> klass) {
+        Constructor constructor = null;
+        try {
+            Constructor[] constructors = klass.getConstructors();
+            if (constructors.length > 1) {
+                for (int i = 0; i < constructors.length; i++) {
+                    if (constructors[i].getParameterCount() == 1) {
+                        constructor = constructors[i];
+                    }
+                }
+            } else {
+                constructor = constructors[0];
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return constructor;
+    }
+
+    private void validateFile(String line, List<Object> fixedHeadersList) {
+        try {
+            List<Object> headersList = StringUtils.isNotEmpty(line) ? Arrays.asList(line.split(",")) : null;
+            if (!CollectionUtils.isEmpty(headersList) && !CollectionUtils.isEmpty(fixedHeadersList) && headersList.size() != fixedHeadersList.size()) {
+                throw new InvalidParameterSagitException("File not allowed: Expected - " + fixedHeadersList.size() + " In File - " + headersList.size());
+            } else {
+                for (int i = 0; i < fixedHeadersList.size(); i++) {
+                    String headerElement = (String) headersList.get(i);
+                    String fixedHeaderElement = (String) fixedHeadersList.get(i);
+                    if (!headerElement.trim().equals(fixedHeaderElement.trim())) {
+                        throw new InvalidParameterSagitException("Header not matched: " + "Expected - " + fixedHeaderElement + " In File - " + headerElement);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    private <T> T getTheObjectFromLine(Class<T> klass, String line, Constructor constructor) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        T myObject = null;
+        try {
+            List<Object> objectList = StringUtils.isNotEmpty(line) ? Arrays.asList(StringUtils.splitPreserveAllTokens(line, ",")) : null;
+            if (objectList != null) {
+                List<Object> dataList = new ArrayList<>();
+                Pattern pattern = Pattern.compile("[a-zA-Z0-9_\\/\\,\\.\\-\\@\\s]*");
+                objectList.forEach(object -> {
+                    if (!pattern.matcher(object.toString()).matches()) {
+                        dataList.add(object.toString().replaceAll("[^a-zA-Z0-9_\\/\\,\\.\\-\\@\\s]*", ""));
+                    } else {
+                        dataList.add(object);
+                    }
+                });
+                myObject = (T) constructor.newInstance(dataList);
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return myObject;
     }
 
     @GetMapping(path = "s/get", produces = {"application/xml", "application/json"})
